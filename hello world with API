@@ -1,0 +1,31 @@
+import ctypes
+from ctypes import wintypes
+
+# Load the DLLs
+user32 = ctypes.WinDLL('User32.dll')
+
+# Define MessageBoxW parameters and return types for better error checking
+user32.MessageBoxW.argtypes = [
+    wintypes.HWND,
+    wintypes.LPCWSTR,
+    wintypes.LPCWSTR,
+    wintypes.UINT,
+]
+user32.MessageBoxW.restype = wintypes.INT
+
+# Constants for the uType parameter (For simplicity, only MB_OK and MB_ICONSTOP are defined)
+MB_OK = 0x0
+MB_ICONSTOP = 0x10
+
+# Parameters
+hWnd = None
+lpText = "Hello World"
+lpCaption = "Hello Students!"
+uType = MB_OK | MB_ICONSTOP
+
+# Call MessageBoxW and check for errors
+response = user32.MessageBoxW(hWnd, lpText, lpCaption, uType)
+if response == 0:
+    raise ctypes.WinError(ctypes.get_last_error())
+
+# Note: The actual error handling might need to be adjusted based on the function's documentation and expected behavior.
