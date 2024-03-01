@@ -1,0 +1,58 @@
+import ctypes
+from ctypes.wintypes import DWORD
+
+# Load DLLs
+user32 = ctypes.WinDLL('user32', use_last_error=True)
+kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+
+# Define necessary constants
+PROCESS_TERMINATE = 0x0001
+PROCESS_QUERY_INFORMATION = 0x0400
+
+def terminate_process(window_title):
+    # Find Window by title
+    hwnd = user32.FindWindowA(None, window_title.encode('utf-8'))
+    if not hwnd:
+        print(f"Window with title '{window_title}' not found.")
+        print(f"Error: {ctypes.WinError()}")
+        return False
+
+    # Get PID
+    pid = DWORD()
+    if not user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid)):
+        print(f"Failed to get process ID for window '{window_title}'.")
+        print(f"Error: {ctypes.WinError()}")
+        return False
+    
+    print(f"Process ID for window '{window_title}': {pid.value}")
+
+    # Open process
+    process_handle = kernel32.OpenProcess(PROCESS_TERMINATE | PROCESS_QUERY_INFORMATION, False, pid.value)
+    if not process_handle:
+        error_code = ctypes.GetLastError()
+        print(f"Failed to open process with PID {pid.value}.")
+        print(f"Error code: {error_code}")
+        print(f"Error message: {ctypes.FormatError(error_code)}")
+        return False
+
+    if process_handle == 0:
+        print(f"Failed to open process handle for PID {pid.value}.")
+        print(f"Error: {ctypes.WinError()}")
+        return False
+
+    # Terminate process
+    result = kernel32.TerminateProcess(process_handle, 1)
+    kernel32.CloseHandle(process_handle)
+
+    if result:
+        print(f"Process '{window_title}' terminated successfully.")
+        return True
+    else:
+        print(f"Failed to terminate process '{window_title}'.")
+        print(f"Error: {ctypes.WinError()}")
+        return False
+
+# Start function
+if __name__ == "__main__":
+    window_title = "Task Manager"
+    terminate_process(window_title)
