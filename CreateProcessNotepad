@@ -1,0 +1,68 @@
+import ctypes
+from ctypes import wintypes
+
+k_handle = ctypes.WinDLL('Kernel32.dll')
+
+class PROCESS_INFORMATION(ctypes.Structure):
+    _fields_ = [
+        ("hProcess", wintypes.HANDLE),
+        ("hThread", wintypes.HANDLE),
+        ("dwProcessId", wintypes.DWORD),
+        ("dwThreadId", wintypes.DWORD)
+    ]
+
+class STARTUP_INFORMATION(ctypes.Structure):
+    _fields_ =  [
+        ("cb", wintypes.HANDLE),
+        ("lpReserved", wintypes.LPWSTR),
+        ("lpDesktop", wintypes.LPWSTR),
+        ("lpTitle", wintypes.LPWSTR),
+        ("dwX", wintypes.HANDLE),
+        ("dwY", wintypes.HANDLE),
+        ("dwXSize", wintypes.DWORD),
+        ("dwYSize", wintypes.DWORD),
+        ("dwXCountChars", wintypes.HANDLE),
+        ("dwYCountChars", wintypes.HANDLE),
+        ("dwFillAtrribute", wintypes.DWORD),
+        ("dwFlags", wintypes.DWORD),
+        ("wShowWindow", wintypes.WORD),
+        ("cbReserved2", wintypes.WORD),
+        ("lpReserved2", wintypes.LPBYTE),
+        ("hStdInput", wintypes.DWORD),
+        ("hStdOutput", wintypes.HANDLE),
+        ("hStdError", wintypes.HANDLE)
+    ]
+
+lpApplicationName = "C:\\Windows\\system32\\notepad.exe"
+lpCommandLine = None
+lpProcessAttributes = None
+lpThreadAttributes = None
+lpEnvironment = None
+lpCurrentDirectory = None
+
+dwCreationFlags = 0x00000010
+
+bInheritHandle = False
+lpProcessInformation = PROCESS_INFORMATION()
+lpStartupinfo = STARTUP_INFORMATION()
+
+lpStartupinfo.wShowWindow = 0x1
+lpStartupinfo.dwFlags = 0x1
+
+response = k_handle.CreateProcessW(
+    lpApplicationName,
+    lpCommandLine,
+    lpProcessAttributes,
+    lpThreadAttributes,
+    bInheritHandle,
+    dwCreationFlags,
+    lpEnvironment,
+    lpCurrentDirectory,
+    ctypes.byref(lpStartupinfo),
+    ctypes.byref(lpProcessInformation)
+)
+
+if response > 0:
+    print("Process is running.")
+else:
+    print(f"Failed to get handle. Error code: {k_handle.GetLastError()}")
